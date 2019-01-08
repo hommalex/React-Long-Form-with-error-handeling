@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>React Create an app</title>
+	<style>
+		* { font: 14px verdana, sans-serif; }
+		#root { width: 100%; height: 100%; display: flex; justify-content: center; align-items:center; -wkit-diplay: flex; justify-content: center; align-items:center; }
+		label { display: block; margin-bottom: 20px; width: 350px;}
+		input { display: block; width: 100%;}
+		.errors { background-color: #b94a48; color: #fff; padding: 3px 9px 4px; margin-top: 5px; border-radius: 4px; font-size: 14px; display: block; }
+	</style>
+</head>
+<body>
+	<div id="root"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.21.1/babel.min.js"></script>
+	<script type="text/babel">
+/*
+  from https://reactjs.org/docs/forms.html
+  Thanks to 
+    https://regex101.com/
+*/
+class App extends React.Component {
+    
+  constructor(props) {
+    super(props);
+    this.state = {
+      values: {
+        fname: "",
+        lname: "",
+        address: "",
+        tel: ""
+      },
+      error: {
+        fname: false,
+        lname: false,
+        address: false,
+        tel: false
+      },
+      isFormValid: [],
+      loading: false,
+      submited: ""
+    };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(e) {
+    var name = e.target.name;
+    var value = e.target.value;
+    var errorkey = this.formValid(name,value);
+    this.setState({values: {...this.state.values, [name]: value }, error: { ...this.state.error, [name]: errorkey } } );
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+  	var error = {};
+  	var isFormValid = [];
+  	for (const key of Object.keys(this.state.values)) {
+  		var result = this.formValid(key,this.state.values[key]);
+  		error[key] = result;
+  		isFormValid.push(result);
+  	}
+    isFormValid = isFormValid.filter( (dat) => dat === true );
+    if (isFormValid.length === 0) {
+      this.setState({loading: true,submited : JSON.stringify(this.state.values), isFormValid });
+	    // EXAMPLE:
+      // fetch.get("url",{values: this.state.values});
+    } else {
+  		this.setState({ error, isFormValid });
+  	}
+
+  }
+
+  formValid(name,value) {
+    if (name === 'tel') { return !/^[+][0-9]{2,3}[ ][0-9 ]+$/.test(value) }
+    else { return (value.length < 2) ? true : false; }
+  }
+
+  render() {
+
+	const { values, error, isFormValid, loading, submited } = this.state;
+
+    return ( 
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          First Name:
+          <input type="text" value={values.fname} name="fname" onChange={this.handleChange} />
+			  { error.fname && <span className="errors">  This field is required  </span> }
+        </label>
+        <label>
+          last Name:
+          <input type="text" value={values.lname} name="lname" onChange={this.handleChange} />
+				{ error.lname && <span className="errors">  This field is required  </span> }
+        </label>
+        <label>
+          Address:
+          <input type="text" value={values.address} name="address" onChange={this.handleChange} />
+				{ error.address && <span className="errors">  This field is required  </span> }
+        </label>
+        <label>
+          Telephone:
+          <input type="text" value={values.tel} name="tel" onChange={this.handleChange} />
+				{ error.tel && <span className="errors">  This field requires a valid phone number with country code (eg. +353 555 777)  </span> }
+        </label>
+        <input type="submit" value={loading ? "Loading" : "Submit"} />
+        <div>{submited}</div>
+        { isFormValid.length > 0 && <span className="errors"> You have errors in your form. </span>  }
+      </form>
+    );
+  }
+  
+}
+
+ReactDOM.render(
+  <App />,
+  document.getElementById('root')
+);
+	</script>
+</body>
+</html>
